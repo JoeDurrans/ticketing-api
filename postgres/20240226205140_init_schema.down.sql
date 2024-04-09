@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS account;
+
+DROP TABLE IF EXISTS ticket;
+
+DROP TABLE IF EXISTS assignee;

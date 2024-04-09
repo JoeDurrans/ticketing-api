@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      retries: 3
+      timeout: 5s
+
+  scylla:
+    image: scylladb/scylla
+    container_name: scylla
+    ports:
+      - "${SCYLLA_PORT}:${SCYLLA_PORT}"
+    environment:
+      SCYLLA_API_ADDRESS: ${SCYLLA_API_ADDRESS}
+      SCYLLA_LISTEN_ADDRESS: ${SCYLLA_LISTEN_ADDRESS}
+      SCYLLA_RPC_ADDRESS: ${SCYLLA_LISTEN_ADDRESS}
+    volumes:
+      - scylla_data:/var/lib/scylla
+    healthcheck:
+      test: ["CMD", "cqlsh", "-u", "${SCYLLA_USERNAME}", "-p", "${SCYLLA_PASSWORD}", "-e", "DESCRIBE KEYSPACES"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  go:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go
+    env_file:
+      - .env
+    ports:
+      - "${PORT}:${PORT}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      scylla:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  scylla_data:

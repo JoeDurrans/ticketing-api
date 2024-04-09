@@ -1,0 +1,14 @@
+# flyctl launch added from .gitignore
+# ignore .env file
+**/.env
+
+# ignore bin directory
+**/bin
+
+# TLS certificates
+**/*.pem
+
+# temporary files
+**/tmp
+**/.vscode
+fly.toml
