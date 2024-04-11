@@ -46,12 +46,12 @@ func (m *MessageAdapter) GetByID(id string) (*types.Message, error) {
 }
 
 func (m *MessageAdapter) Update(message *types.Message) (*types.Message, error) {
-	err := m.db.Query("UPDATE message SET content = ?, updated_at = ? WHERE id = ?", message.Content, message.UpdatedAt, message.ID).Exec()
+	err := m.db.Query("UPDATE message SET ticket_id = ?, author_id = ?, content = ?, created_at = ?, updated_at = ? WHERE id = ?", message.TicketID, message.AuthorID, message.Content, message.CreatedAt, message.UpdatedAt, message.ID).Exec()
 	if err != nil {
 		return nil, fmt.Errorf("error updating message: %w", err)
 	}
 
-	return nil, nil
+	return message, nil
 }
 
 func scanIntoMessage(scanner gocql.Scanner) (*types.Message, error) {

@@ -167,6 +167,7 @@ func (c *Client) Write() {
 	for message := range c.send {
 		err := websocket.JSON.Send(c.conn, message)
 		if err != nil {
+			log.Println("error sending message:", err)
 			return
 		}
 	}
