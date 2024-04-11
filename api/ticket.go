@@ -35,7 +35,7 @@ func (s *APIServer) handleCreateTicket(w http.ResponseWriter, r *http.Request) e
 		}
 	}
 
-	ticket := CreateTicket(req.Title, req.Description, req.AuthorID, req.Status, req.AssigneeIDs)
+	ticket := types.CreateTicket(req.Title, req.Description, req.AuthorID, req.Status, req.AssigneeIDs)
 
 	ticket, err = s.db.Ticket.Create(ticket)
 	if err != nil {
@@ -218,16 +218,6 @@ func getAssigneeIDs(r *http.Request) ([]int, error) {
 	}
 
 	return assigneeIDs, nil
-}
-
-func CreateTicket(title string, description string, authorID int, status types.Status, assigneeIDs []int) *types.Ticket {
-	return &types.Ticket{
-		Title:       title,
-		Description: description,
-		AuthorID:    authorID,
-		Status:      status,
-		AssigneeIDs: assigneeIDs,
-	}
 }
 
 type CreateTicketRequest struct {

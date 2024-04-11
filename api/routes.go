@@ -26,34 +26,30 @@ func CreateAPIServer(addr string, db *data.DataAdapter) *APIServer {
 
 func (s *APIServer) Start() error {
 	router := http.NewServeMux()
-	log.Println("Starting server on", s.addr)
 
-	//ping
 	router.HandleFunc("GET /ping", makeHTTPHandleFunc(s.handlePing))
 
 	router.HandleFunc("POST /account/login", makeHTTPHandleFunc(s.handleLogin))
 
 	router.HandleFunc("POST /account", IsAdmin(makeHTTPHandleFunc(s.handleCreateAccount)))
-
 	router.HandleFunc("GET /account", IsEditor(makeHTTPHandleFunc(s.handleGetAccounts)))
-
-	router.HandleFunc("GET /ticket", makeHTTPHandleFunc(s.handleGetTickets))
 	router.HandleFunc("GET /account/{id}", IsAuthenticated(makeHTTPHandleFunc(s.handleGetAccountByID)))
 	router.HandleFunc("PUT /account/{id}", IsAuthenticated(makeHTTPHandleFunc(s.handleUpdateAccount)))
 	router.HandleFunc("DELETE /account/{id}", IsAuthenticated(makeHTTPHandleFunc(s.handleDeleteAccount)))
+
 	router.HandleFunc("POST /ticket", IsAuthenticated(makeHTTPHandleFunc(s.handleCreateTicket)))
+	router.HandleFunc("GET /ticket", makeHTTPHandleFunc(s.handleGetTickets))
+	router.HandleFunc("GET /ticket/{id}/chat", makeHTTPHandleFunc(s.handleChatGroup))
 	router.HandleFunc("GET /ticket/{id}", IsAuthenticated(makeHTTPHandleFunc(s.handleGetTicketByID)))
 	router.HandleFunc("PUT /ticket/{id}", IsAuthenticated(makeHTTPHandleFunc(s.handleUpdateTicket)))
 	router.HandleFunc("DELETE /ticket/{id}", IsAuthenticated(makeHTTPHandleFunc(s.handleDeleteTicket)))
-	router.HandleFunc("GET /ticket/{id}/chat", makeHTTPHandleFunc(s.handleChatGroup))
-
-	stack := CreateStack(Logging)
 
 	server := &http.Server{
 		Addr:    s.addr,
-		Handler: stack(router),
+		Handler: CreateStack(Logging)(router),
 	}
 
+	log.Println("Starting server on", s.addr)
 	return server.ListenAndServe()
 }
 
@@ -100,6 +96,11 @@ func makeHTTPHandleFunc(f apiFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		err := f(w, r)
 		if err != nil {
+			if err.Error() == "permission denied" {
+				EncodeResponse(w, http.StatusUnauthorized, &APIResponse{Status: http.StatusUnauthorized, Message: "permission denied"})
+				return
+			}
+
 			EncodeResponse(w, http.StatusInternalServerError, &APIResponse{Status: http.StatusInternalServerError, Message: err.Error()})
 		}
 	})

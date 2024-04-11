@@ -28,11 +28,6 @@ func main() {
 	}
 
 	cluster := gocql.NewCluster(strings.Split(os.Getenv("SCYLLA_HOSTS"), ",")...)
-	// clusterPort, err := strconv.Atoi(os.Getenv("SCYLLA_PORT"))
-	// if err != nil {
-	// 	log.Fatal("failed to parse scylla port:", err)
-	// }
-	// cluster.Port = clusterPort
 	cluster.Authenticator = gocql.PasswordAuthenticator{
 		Username: os.Getenv("SCYLLA_USERNAME"),
 		Password: os.Getenv("SCYLLA_PASSWORD"),

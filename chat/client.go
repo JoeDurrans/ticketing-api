@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"sync"
 	"ticketing-api/auth"
 	"ticketing-api/data"
 	"ticketing-api/types"
@@ -28,12 +27,12 @@ func (c *Client) handleCreateMessage(data json.RawMessage) error {
 
 	currentTime := time.Now()
 
-	accountID, err := auth.GetID(c.Conn.Request())
+	accountID, err := auth.GetID(c.conn.Request())
 	if err != nil {
 		return err
 	}
 
-	message, err := CreateMessage(id.String(), c.Group.TicketID, accountID, req.Content, currentTime, currentTime)
+	message, err := types.CreateMessage(id.String(), c.group.ticketID, accountID, req.Content, currentTime, currentTime)
 	if err != nil {
 		return err
 	}
@@ -43,7 +42,7 @@ func (c *Client) handleCreateMessage(data json.RawMessage) error {
 		return err
 	}
 
-	c.Group.Broadcast <- &WSMessage{Status: StatusSuccess, Action: ActionCreate, Message: "message created", Data: message}
+	c.group.broadcast <- &WSMessage{Status: StatusSuccess, Action: ActionCreate, Message: "message created", Data: message}
 
 	return nil
 }
@@ -62,7 +61,7 @@ func (c *Client) handleDeleteMessage(data json.RawMessage) error {
 
 	log.Println(message)
 
-	if ok := auth.AccountIDAuth(c.Conn.Request(), message.AuthorID, types.RoleAdmin); !ok {
+	if ok := auth.AccountIDAuth(c.conn.Request(), message.AuthorID, types.RoleAdmin); !ok {
 		return fmt.Errorf("permission denied")
 	}
 
@@ -71,7 +70,7 @@ func (c *Client) handleDeleteMessage(data json.RawMessage) error {
 		return err
 	}
 
-	c.Group.Broadcast <- &WSMessage{Status: StatusSuccess, Action: ActionDelete, Message: "message deleted", Data: &DeleteMessageResponse{ID: message.ID}}
+	c.group.broadcast <- &WSMessage{Status: StatusSuccess, Action: ActionDelete, Message: "message deleted", Data: &DeleteMessageResponse{ID: message.ID}}
 
 	return nil
 }
@@ -88,7 +87,7 @@ func (c *Client) handleUpdateMessage(data []byte) error {
 		return err
 	}
 
-	if ok := auth.AccountIDAuth(c.Conn.Request(), message.AuthorID, types.RoleAdmin); !ok {
+	if ok := auth.AccountIDAuth(c.conn.Request(), message.AuthorID, types.RoleAdmin); !ok {
 		return fmt.Errorf("permission denied")
 	}
 
@@ -99,42 +98,38 @@ func (c *Client) handleUpdateMessage(data []byte) error {
 		return err
 	}
 
-	c.Group.Broadcast <- &WSMessage{Status: StatusSuccess, Action: ActionUpdate, Message: "message updated", Data: message}
+	c.group.broadcast <- &WSMessage{Status: StatusSuccess, Action: ActionUpdate, Message: "message updated", Data: message}
 
 	return nil
 }
 
 type Client struct {
-	Conn  *websocket.Conn
-	Group *Group
+	conn  *websocket.Conn
+	group *Group
 	db    *data.DataAdapter
-	Send  chan *WSMessage
-	once  *sync.Once
+	send  chan *WSMessage
 }
 
 func CreateClient(conn *websocket.Conn, group *Group, db *data.DataAdapter) *Client {
 	return &Client{
-		Conn:  conn,
-		Group: group,
+		conn:  conn,
+		group: group,
 		db:    db,
-		Send:  make(chan *WSMessage),
-		once:  &sync.Once{},
+		send:  make(chan *WSMessage),
 	}
 }
 
 func (c *Client) Connect() {
-	c.Group.Register <- c
+	c.group.register <- c
 
 	go c.Write()
 	c.Read()
 }
 
 func (c *Client) Disconnect() {
-	c.once.Do(func() {
-		c.Group.Unregister <- c
-		c.Conn.Close()
-		close(c.Send)
-	})
+	c.group.unregister <- c
+	c.conn.Close()
+	close(c.send)
 }
 
 func (c *Client) Read() {
@@ -142,9 +137,9 @@ func (c *Client) Read() {
 
 	for {
 		req := &MessageRequest{}
-		err := websocket.JSON.Receive(c.Conn, &req)
+		err := websocket.JSON.Receive(c.conn, &req)
 		if err != nil {
-			c.Send <- &WSMessage{Status: StatusError, Message: err.Error()}
+			c.send <- &WSMessage{Status: StatusError, Message: err.Error()}
 			return
 		}
 
@@ -152,42 +147,29 @@ func (c *Client) Read() {
 		case ActionCreate:
 			err = c.handleCreateMessage(req.Data)
 			if err != nil {
-				c.Send <- &WSMessage{Status: StatusError, Action: ActionCreate, Message: err.Error()}
+				c.send <- &WSMessage{Status: StatusError, Action: ActionCreate, Message: err.Error()}
 			}
 		case ActionUpdate:
 			err = c.handleUpdateMessage(req.Data)
 			if err != nil {
-				c.Send <- &WSMessage{Status: StatusError, Action: ActionUpdate, Message: err.Error()}
+				c.send <- &WSMessage{Status: StatusError, Action: ActionUpdate, Message: err.Error()}
 			}
 		case ActionDelete:
 			err = c.handleDeleteMessage(req.Data)
 			if err != nil {
-				c.Send <- &WSMessage{Status: StatusError, Action: ActionDelete, Message: err.Error()}
+				c.send <- &WSMessage{Status: StatusError, Action: ActionDelete, Message: err.Error()}
 			}
 		}
 	}
 }
 
 func (c *Client) Write() {
-	defer c.Disconnect()
-
-	for message := range c.Send {
-		err := websocket.JSON.Send(c.Conn, message)
+	for message := range c.send {
+		err := websocket.JSON.Send(c.conn, message)
 		if err != nil {
 			return
 		}
 	}
-}
-
-func CreateMessage(id string, ticketID int, authorID int, content string, createdAt time.Time, updatedAt time.Time) (*types.Message, error) {
-	return &types.Message{
-		ID:        id,
-		TicketID:  ticketID,
-		AuthorID:  authorID,
-		Content:   content,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
-	}, nil
 }
 
 type Action string

@@ -1,68 +1,70 @@
 package chat
 
 import (
-	"log"
 	"sync"
 )
 
 type Group struct {
-	TicketID   int
-	Clients    *sync.Map
-	Register   chan *Client
-	Unregister chan *Client
-	Broadcast  chan *WSMessage
-	OnStop     func()
+	ticketID   int
+	clients    *sync.Map
+	register   chan *Client
+	unregister chan *Client
+	broadcast  chan *WSMessage
+	onStop     func()
+	once       *sync.Once
 }
 
 func CreateGroup(ticketID int, onStop func()) *Group {
 	return &Group{
-		TicketID:   ticketID,
-		Clients:    &sync.Map{},
-		Register:   make(chan *Client),
-		Unregister: make(chan *Client),
-		Broadcast:  make(chan *WSMessage),
-		OnStop:     onStop,
+		ticketID:   ticketID,
+		clients:    &sync.Map{},
+		register:   make(chan *Client),
+		unregister: make(chan *Client),
+		broadcast:  make(chan *WSMessage),
+		onStop:     onStop,
+		once:       &sync.Once{},
 	}
 }
 
 func (g *Group) Start() error {
-	log.Println("Starting chat group for ticket", g.TicketID)
 	for {
 		select {
-		case client := <-g.Register:
+		case client := <-g.register:
 			g.registerClient(client)
-		case client := <-g.Unregister:
+		case client := <-g.unregister:
 			g.unregisterClient(client)
-		case message := <-g.Broadcast:
+		case message := <-g.broadcast:
 			g.broadcastMessage(message)
 		}
 	}
 }
 
 func (g *Group) Stop() {
-	close(g.Broadcast)
-	close(g.Register)
-	close(g.Unregister)
-	if g.OnStop != nil {
-		g.OnStop()
-	}
+	g.once.Do(func() {
+		close(g.broadcast)
+		close(g.register)
+		close(g.unregister)
+
+		if g.onStop != nil {
+			g.onStop()
+		}
+	})
 }
 
 func (g *Group) registerClient(client *Client) {
-	g.Clients.Store(client, true)
+	g.clients.Store(client, true)
 }
 
 func (g *Group) unregisterClient(client *Client) {
-	g.Clients.Delete(client)
+	g.clients.Delete(client)
 	if g.isEmpty() {
 		g.Stop()
-		log.Println("Chat group for ticket", g.TicketID, "is empty, stopping")
 	}
 }
 
 func (g *Group) isEmpty() bool {
 	empty := true
-	g.Clients.Range(func(_, _ any) bool {
+	g.clients.Range(func(_, _ any) bool {
 		empty = false
 		return false
 	})
@@ -70,8 +72,11 @@ func (g *Group) isEmpty() bool {
 }
 
 func (g *Group) broadcastMessage(message *WSMessage) {
-	g.Clients.Range(func(client, _ any) bool {
-		client.(*Client).Send <- message
+	g.clients.Range(func(client, _ any) bool {
+		if c, ok := client.(*Client); ok && c != nil {
+			c.send <- message
+		}
+
 		return true
 	})
 }

@@ -22,3 +22,13 @@ type Ticket struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
+
+func CreateTicket(title string, description string, authorID int, status Status, assigneeIDs []int) *Ticket {
+	return &Ticket{
+		Title:       title,
+		Description: description,
+		AuthorID:    authorID,
+		Status:      status,
+		AssigneeIDs: assigneeIDs,
+	}
+}

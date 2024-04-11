@@ -21,7 +21,6 @@ func (s *APIServer) handleChatGroup(w http.ResponseWriter, r *http.Request) erro
 		return err
 	}
 
-	// hacky way to get the token from the websocket request
 	r.Header.Set("Authorization", r.Header.Get("Sec-WebSocket-Protocol"))
 
 	if ok := auth.AccountIDAuth(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor); !ok {

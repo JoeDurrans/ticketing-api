@@ -5,9 +5,6 @@ import (
 	"net/http"
 	"ticketing-api/auth"
 	"ticketing-api/types"
-	"time"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
@@ -18,7 +15,7 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	account, err := CreateAccount(req.Username, req.Password, req.Role)
+	account, err := types.CreateAccount(req.Username, req.Password, req.Role)
 	if err != nil {
 		return err
 	}
@@ -140,21 +137,6 @@ func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return EncodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "login successful", Data: &LoginResponse{Token: token}})
-}
-
-func CreateAccount(username string, password string, role types.Role) (*types.Account, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.Account{
-		Username:  username,
-		Password:  string(bytes),
-		Role:      role,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}, nil
 }
 
 type CreateAccountRequest struct {

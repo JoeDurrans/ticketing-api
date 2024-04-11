@@ -1,0 +1,1 @@
+CREATE TABLE message AS SELECT * FROM messages;
