@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"ticketing-api/auth"
 	"ticketing-api/chat"
@@ -23,8 +22,9 @@ func (s *APIServer) handleChatGroup(w http.ResponseWriter, r *http.Request) erro
 
 	r.Header.Set("Authorization", r.Header.Get("Sec-WebSocket-Protocol"))
 
-	if ok := auth.AccountIDAuth(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor); !ok {
-		return fmt.Errorf("permission denied")
+	err = auth.AccountIDAuth(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor)
+	if err != nil {
+		return err
 	}
 
 	group, ok := s.chatGroups.LoadOrStore(ticket.ID, chat.CreateGroup(ticket.ID, func() {
@@ -40,7 +40,6 @@ func (s *APIServer) handleChatGroup(w http.ResponseWriter, r *http.Request) erro
 			client.Connect()
 		}),
 	}.ServeHTTP(w, r)
-	// ws.ServeHTTP(w, r)
 
 	return nil
 }

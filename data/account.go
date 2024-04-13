@@ -22,7 +22,7 @@ func (a *AccountAdapter) Create(account *types.Account) (*types.Account, error) 
 	id := 0
 	err := a.db.QueryRow("INSERT INTO account (username, password, role) VALUES ($1, $2, $3) RETURNING id", account.Username, account.Password, account.Role).Scan(&id)
 	if err != nil {
-		return nil, fmt.Errorf("error creating account: %w", err)
+		return nil, fmt.Errorf("error creating account")
 	}
 
 	account.ID = id
@@ -33,7 +33,7 @@ func (a *AccountAdapter) Create(account *types.Account) (*types.Account, error) 
 func (a *AccountAdapter) Get() ([]*types.Account, error) {
 	rows, err := a.db.Query(`SELECT * FROM account`)
 	if err != nil {
-		return nil, fmt.Errorf("error getting accounts: %w", err)
+		return nil, fmt.Errorf("error getting accounts")
 	}
 	defer rows.Close()
 
@@ -54,7 +54,7 @@ func (a *AccountAdapter) Get() ([]*types.Account, error) {
 func (a *AccountAdapter) GetByID(id int) (*types.Account, error) {
 	rows, err := a.db.Query(`SELECT * FROM account WHERE id = $1`, id)
 	if err != nil {
-		return nil, fmt.Errorf("error getting account: %w", err)
+		return nil, fmt.Errorf("error getting account")
 	}
 	defer rows.Close()
 
@@ -62,13 +62,13 @@ func (a *AccountAdapter) GetByID(id int) (*types.Account, error) {
 		return scanIntoAccount(rows)
 	}
 
-	return nil, fmt.Errorf("account %d not found", id)
+	return nil, fmt.Errorf("account with id: %d not found", id)
 }
 
 func (a *AccountAdapter) GetByUsername(username string) (*types.Account, error) {
 	rows, err := a.db.Query(`SELECT * FROM account WHERE username = $1`, username)
 	if err != nil {
-		return nil, fmt.Errorf("error getting account: %w", err)
+		return nil, fmt.Errorf("error getting account")
 	}
 	defer rows.Close()
 
@@ -82,7 +82,7 @@ func (a *AccountAdapter) GetByUsername(username string) (*types.Account, error) 
 func (a *AccountAdapter) Update(account *types.Account) (*types.Account, error) {
 	_, err := a.db.Exec(`UPDATE account SET username = $1, password = $2, role = $3 WHERE id = $4`, account.Username, account.Password, account.Role, account.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error updating account: %w", err)
+		return nil, fmt.Errorf("error updating account")
 	}
 
 	return account, nil
@@ -91,7 +91,7 @@ func (a *AccountAdapter) Update(account *types.Account) (*types.Account, error) 
 func (a *AccountAdapter) Delete(id int) error {
 	_, err := a.db.Exec(`DELETE FROM account WHERE id = $1`, id)
 	if err != nil {
-		return fmt.Errorf("error deleting account: %w", err)
+		return fmt.Errorf("error deleting account")
 	}
 
 	return nil
@@ -102,7 +102,7 @@ func scanIntoAccount(rows *sql.Rows) (*types.Account, error) {
 
 	err := rows.Scan(&account.ID, &account.Username, &account.Password, &account.Role, &account.CreatedAt, &account.UpdatedAt)
 	if err != nil {
-		return nil, fmt.Errorf("error scanning account: %w", err)
+		return nil, fmt.Errorf("error reading account")
 	}
 
 	return account, nil

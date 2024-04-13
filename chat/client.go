@@ -2,8 +2,6 @@ package chat
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"ticketing-api/auth"
 	"ticketing-api/data"
 	"ticketing-api/types"
@@ -59,10 +57,9 @@ func (c *Client) handleDeleteMessage(data json.RawMessage) error {
 		return err
 	}
 
-	log.Println(message)
-
-	if ok := auth.AccountIDAuth(c.conn.Request(), message.AuthorID, types.RoleAdmin); !ok {
-		return fmt.Errorf("permission denied")
+	err = auth.AccountIDAuth(c.conn.Request(), message.AuthorID, types.RoleAdmin)
+	if err != nil {
+		return err
 	}
 
 	err = c.db.Message.Delete(message.ID)
@@ -87,8 +84,9 @@ func (c *Client) handleUpdateMessage(data []byte) error {
 		return err
 	}
 
-	if ok := auth.AccountIDAuth(c.conn.Request(), message.AuthorID, types.RoleAdmin); !ok {
-		return fmt.Errorf("permission denied")
+	err = auth.AccountIDAuth(c.conn.Request(), message.AuthorID, types.RoleAdmin)
+	if err != nil {
+		return err
 	}
 
 	message.Content = req.Content
@@ -167,7 +165,6 @@ func (c *Client) Write() {
 	for message := range c.send {
 		err := websocket.JSON.Send(c.conn, message)
 		if err != nil {
-			log.Println("error sending message:", err)
 			return
 		}
 	}

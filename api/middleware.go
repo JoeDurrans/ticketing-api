@@ -9,34 +9,37 @@ import (
 
 func IsAdmin(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if ok := auth.IsAdmin(r); ok {
-			next.ServeHTTP(w, r)
+		err := auth.IsAdmin(r)
+		if err != nil {
+			encodeResponse(w, http.StatusUnauthorized, &APIResponse{Status: http.StatusUnauthorized, Message: err.Error()})
 			return
 		}
 
-		EncodeResponse(w, http.StatusUnauthorized, &APIResponse{Status: http.StatusUnauthorized, Message: "permission denied"})
+		next.ServeHTTP(w, r)
 	})
 }
 
 func IsEditor(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if ok := auth.IsEditor(r); ok {
-			next.ServeHTTP(w, r)
+		err := auth.IsEditor(r)
+		if err != nil {
+			encodeResponse(w, http.StatusUnauthorized, &APIResponse{Status: http.StatusUnauthorized, Message: err.Error()})
 			return
 		}
 
-		EncodeResponse(w, http.StatusUnauthorized, &APIResponse{Status: http.StatusUnauthorized, Message: "permission denied"})
+		next.ServeHTTP(w, r)
 	})
 }
 
 func IsAuthenticated(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if ok := auth.IsAuthenticated(r); ok {
-			next.ServeHTTP(w, r)
+		err := auth.IsAuthenticated(r)
+		if err != nil {
+			encodeResponse(w, http.StatusUnauthorized, &APIResponse{Status: http.StatusUnauthorized, Message: err.Error()})
 			return
 		}
 
-		EncodeResponse(w, http.StatusUnauthorized, &APIResponse{Status: http.StatusUnauthorized, Message: "permission denied"})
+		next.ServeHTTP(w, r)
 	})
 }
 
@@ -48,9 +51,9 @@ func Logging(next http.Handler) http.HandlerFunc {
 	})
 }
 
-type Middleware func(http.Handler) http.HandlerFunc
+type middleware func(http.Handler) http.HandlerFunc
 
-func CreateStack(mw ...Middleware) Middleware {
+func CreateStack(mw ...middleware) middleware {
 	return func(next http.Handler) http.HandlerFunc {
 		for i := len(mw) - 1; i >= 0; i-- {
 			next = mw[i](next)

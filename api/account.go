@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"ticketing-api/auth"
 	"ticketing-api/types"
@@ -10,7 +9,7 @@ import (
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
 	req := CreateAccountRequest{}
 
-	err := DecodeRequest(r, &req)
+	err := decodeRequest(r, &req)
 	if err != nil {
 		return err
 	}
@@ -25,7 +24,7 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return EncodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "account created", Data: account})
+	return encodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "account created", Data: account})
 }
 
 func (s *APIServer) handleGetAccounts(w http.ResponseWriter, r *http.Request) error {
@@ -34,7 +33,7 @@ func (s *APIServer) handleGetAccounts(w http.ResponseWriter, r *http.Request) er
 		return err
 	}
 
-	return EncodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "accounts found", Data: accounts})
+	return encodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "accounts found", Data: accounts})
 }
 
 func (s *APIServer) handleGetAccountByID(w http.ResponseWriter, r *http.Request) error {
@@ -43,8 +42,9 @@ func (s *APIServer) handleGetAccountByID(w http.ResponseWriter, r *http.Request)
 		return err
 	}
 
-	if ok := auth.AccountIDAuth(r, id, types.RoleAdmin, types.RoleEditor); !ok {
-		return fmt.Errorf("permission denied")
+	err = auth.AccountIDAuth(r, id, types.RoleAdmin, types.RoleEditor)
+	if err != nil {
+		return err
 	}
 
 	account, err := s.db.Account.GetByID(id)
@@ -52,7 +52,7 @@ func (s *APIServer) handleGetAccountByID(w http.ResponseWriter, r *http.Request)
 		return err
 	}
 
-	return EncodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "account found", Data: account})
+	return encodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "account found", Data: account})
 }
 
 func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) error {
@@ -61,8 +61,9 @@ func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	if ok := auth.AccountIDAuth(r, id, types.RoleAdmin); !ok {
-		return fmt.Errorf("permission denied")
+	err = auth.AccountIDAuth(r, id, types.RoleAdmin)
+	if err != nil {
+		return err
 	}
 
 	account, err := s.db.Account.GetByID(id)
@@ -72,7 +73,7 @@ func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) 
 
 	req := UpdateAccountRequest{}
 
-	err = DecodeRequest(r, &req)
+	err = decodeRequest(r, &req)
 	if err != nil {
 		return err
 	}
@@ -94,7 +95,7 @@ func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return EncodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "account updated", Data: account})
+	return encodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "account updated", Data: account})
 }
 
 func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
@@ -103,8 +104,9 @@ func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	if ok := auth.AccountIDAuth(r, id, types.RoleAdmin); !ok {
-		return fmt.Errorf("permission denied")
+	err = auth.AccountIDAuth(r, id, types.RoleAdmin)
+	if err != nil {
+		return err
 	}
 
 	err = s.db.Account.Delete(id)
@@ -112,12 +114,12 @@ func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return EncodeResponse(w, http.StatusNoContent, &APIResponse{Status: http.StatusNoContent, Message: "account deleted"})
+	return encodeResponse(w, http.StatusNoContent, &APIResponse{Status: http.StatusNoContent, Message: "account deleted"})
 }
 
 func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {
 	req := LoginRequest{}
-	err := DecodeRequest(r, &req)
+	err := decodeRequest(r, &req)
 	if err != nil {
 		return err
 	}
@@ -127,8 +129,9 @@ func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	if !account.CheckPasswordHash(req.Password) {
-		return fmt.Errorf("invalid password")
+	err = account.CheckPasswordHash(req.Password)
+	if err != nil {
+		return err
 	}
 
 	token, err := auth.GenerateJWT(account)
@@ -136,7 +139,7 @@ func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return EncodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "login successful", Data: &LoginResponse{Token: token}})
+	return encodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "login successful", Data: &LoginResponse{Token: token}})
 }
 
 type CreateAccountRequest struct {

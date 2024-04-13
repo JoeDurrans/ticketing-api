@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -23,15 +24,21 @@ type Account struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (a *Account) CheckPasswordHash(password string) bool {
+func (a *Account) CheckPasswordHash(password string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(a.Password), []byte(password))
-	return err == nil
+	if err != nil {
+		return &Unauthorized{
+			Message: "invalid password",
+		}
+	}
+
+	return nil
 }
 
 func CreateAccount(username string, password string, role Role) (*Account, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating account")
 	}
 
 	return &Account{

@@ -2,12 +2,12 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"sync"
 	"ticketing-api/data"
+	"ticketing-api/types"
 )
 
 type APIServer struct {
@@ -50,11 +50,12 @@ func (s *APIServer) Start() error {
 	}
 
 	log.Println("Starting server on", s.addr)
+
 	return server.ListenAndServe()
 }
 
 func (s *APIServer) handlePing(w http.ResponseWriter, r *http.Request) error {
-	EncodeResponse(w, http.StatusOK, &APIResponse{Status: 200, Message: "pong"})
+	encodeResponse(w, http.StatusOK, &APIResponse{Status: 200, Message: "pong"})
 	return nil
 }
 
@@ -63,22 +64,22 @@ func getID(r *http.Request) (int, error) {
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return id, fmt.Errorf("error converting id: %w", err)
+		return id, &types.BadRequest{}
 	}
 
 	return id, nil
 }
 
-func DecodeRequest(r *http.Request, v any) error {
+func decodeRequest(r *http.Request, v any) error {
 	err := json.NewDecoder(r.Body).Decode(v)
 	if err != nil {
-		return fmt.Errorf("error decoding request: %w", err)
+		return &types.BadRequest{}
 	}
 
 	return nil
 }
 
-func EncodeResponse(w http.ResponseWriter, status int, v any) error {
+func encodeResponse(w http.ResponseWriter, status int, v any) error {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(status)
 	return json.NewEncoder(w).Encode(v)
@@ -96,12 +97,16 @@ func makeHTTPHandleFunc(f apiFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		err := f(w, r)
 		if err != nil {
-			if err.Error() == "permission denied" {
-				EncodeResponse(w, http.StatusUnauthorized, &APIResponse{Status: http.StatusUnauthorized, Message: "permission denied"})
-				return
+			switch err.(type) {
+			case *types.Unauthorized:
+				encodeResponse(w, http.StatusUnauthorized, &APIResponse{Status: http.StatusUnauthorized, Message: err.Error()})
+			case *types.Forbidden:
+				encodeResponse(w, http.StatusForbidden, &APIResponse{Status: http.StatusForbidden, Message: err.Error()})
+			case *types.NotFound:
+				encodeResponse(w, http.StatusNotFound, &APIResponse{Status: http.StatusNotFound, Message: err.Error()})
+			default:
+				encodeResponse(w, http.StatusInternalServerError, &APIResponse{Status: http.StatusInternalServerError, Message: err.Error()})
 			}
-
-			EncodeResponse(w, http.StatusInternalServerError, &APIResponse{Status: http.StatusInternalServerError, Message: err.Error()})
 		}
 	})
 }

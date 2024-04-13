@@ -12,26 +12,29 @@ import (
 func (s *APIServer) handleCreateTicket(w http.ResponseWriter, r *http.Request) error {
 	req := &CreateTicketRequest{}
 
-	err := DecodeRequest(r, req)
+	err := decodeRequest(r, req)
 	if err != nil {
 		return err
 	}
 
 	if req.AuthorID > 0 {
-		if ok := auth.AccountIDAuth(r, req.AuthorID, types.RoleAdmin); !ok {
-			return fmt.Errorf("permission denied")
+		err = auth.AccountIDAuth(r, req.AuthorID, types.RoleAdmin)
+		if err != nil {
+			return err
 		}
 	}
 
 	if req.Status != "" {
-		if ok := auth.AccountIDAuth(r, req.AuthorID, types.RoleAdmin, types.RoleEditor); !ok {
-			return fmt.Errorf("permission denied")
+		err = auth.AccountIDAuth(r, req.AuthorID, types.RoleAdmin, types.RoleEditor)
+		if err != nil {
+			return err
 		}
 	}
 
 	if len(req.AssigneeIDs) > 0 {
-		if ok := auth.AccountIDAuth(r, req.AuthorID, types.RoleAdmin, types.RoleEditor); !ok {
-			return fmt.Errorf("permission denied")
+		err = auth.AccountIDAuth(r, req.AuthorID, types.RoleAdmin, types.RoleEditor)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -42,7 +45,7 @@ func (s *APIServer) handleCreateTicket(w http.ResponseWriter, r *http.Request) e
 		return err
 	}
 
-	return EncodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "ticket created", Data: ticket})
+	return encodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "ticket created", Data: ticket})
 }
 
 func (s *APIServer) handleGetTickets(w http.ResponseWriter, r *http.Request) error {
@@ -52,8 +55,9 @@ func (s *APIServer) handleGetTickets(w http.ResponseWriter, r *http.Request) err
 		return err
 	}
 
-	if ok := auth.AccountIDAuth(r, authorID, types.RoleAdmin, types.RoleEditor); !ok {
-		return fmt.Errorf("permission denied")
+	err = auth.AccountIDAuth(r, authorID, types.RoleAdmin, types.RoleEditor)
+	if err != nil {
+		return err
 	}
 
 	assigneeIDs, err := getAssigneeIDs(r)
@@ -85,7 +89,7 @@ func (s *APIServer) handleGetTickets(w http.ResponseWriter, r *http.Request) err
 		}
 	}
 
-	return EncodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "tickets found", Data: tickets})
+	return encodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "tickets found", Data: tickets})
 }
 
 func (s *APIServer) handleGetTicketByID(w http.ResponseWriter, r *http.Request) error {
@@ -99,14 +103,14 @@ func (s *APIServer) handleGetTicketByID(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	if ok := auth.AccountIDAuth(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor); !ok {
-		return fmt.Errorf("permission denied")
+	err = auth.AccountIDAuth(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor)
+	if err != nil {
+		return err
 	}
 
-	return EncodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "ticket found", Data: ticket})
+	return encodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "ticket found", Data: ticket})
 }
 
-// needs to be modified so users cannot modify status, author, or assignee
 func (s *APIServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) error {
 	id, err := getID(r)
 	if err != nil {
@@ -118,13 +122,14 @@ func (s *APIServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) e
 		return err
 	}
 
-	if ok := auth.AccountIDAuth(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor); !ok {
-		return fmt.Errorf("permission denied")
+	err = auth.AccountIDAuth(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor)
+	if err != nil {
+		return err
 	}
 
 	req := &CreateTicketRequest{}
 
-	err = DecodeRequest(r, req)
+	err = decodeRequest(r, req)
 	if err != nil {
 		return err
 	}
@@ -138,16 +143,18 @@ func (s *APIServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) e
 	}
 
 	if req.Status != "" {
-		if ok := auth.AccountIDAuth(r, req.AuthorID, types.RoleAdmin, types.RoleEditor); !ok {
-			return fmt.Errorf("permission denied")
+		err = auth.AccountIDAuth(r, req.AuthorID, types.RoleAdmin, types.RoleEditor)
+		if err != nil {
+			return err
 		}
 
 		ticket.Status = req.Status
 	}
 
 	if len(req.AssigneeIDs) > 0 {
-		if ok := auth.AccountIDAuth(r, req.AuthorID, types.RoleAdmin, types.RoleEditor); !ok {
-			return fmt.Errorf("permission denied")
+		err = auth.AccountIDAuth(r, req.AuthorID, types.RoleAdmin, types.RoleEditor)
+		if err != nil {
+			return err
 		}
 
 		ticket.AssigneeIDs = req.AssigneeIDs
@@ -158,7 +165,7 @@ func (s *APIServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) e
 		return err
 	}
 
-	return EncodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "ticket updated", Data: ticket})
+	return encodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "ticket updated", Data: ticket})
 }
 
 func (s *APIServer) handleDeleteTicket(w http.ResponseWriter, r *http.Request) error {
@@ -172,8 +179,9 @@ func (s *APIServer) handleDeleteTicket(w http.ResponseWriter, r *http.Request) e
 		return err
 	}
 
-	if ok := auth.AccountIDAuth(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor); !ok {
-		return fmt.Errorf("permission denied")
+	err = auth.AccountIDAuth(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor)
+	if err != nil {
+		return err
 	}
 
 	err = s.db.Ticket.Delete(id)
@@ -181,7 +189,7 @@ func (s *APIServer) handleDeleteTicket(w http.ResponseWriter, r *http.Request) e
 		return err
 	}
 
-	return EncodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "ticket deleted"})
+	return encodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "ticket deleted"})
 }
 
 func getAuthorID(r *http.Request) (int, error) {

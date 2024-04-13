@@ -1,4 +1,4 @@
-CREATE TABLE message (
+CREATE TABLE IF NOT EXISTS message (
     id UUID PRIMARY KEY,
     ticket_id INT,
     author_id INT,
