@@ -228,7 +228,7 @@ func getAssigneeIDs(r *http.Request) ([]int, error) {
 		return assigneeIDs, nil
 	}
 
-	for _, idStr := range strings.Split(assigneeIDsStr, "+") {
+	for _, idStr := range strings.Split(assigneeIDsStr, " ") {
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
 			return assigneeIDs, fmt.Errorf("error getting assignee_ids")
