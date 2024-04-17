@@ -1,12 +1,15 @@
 package api
 
 import (
+	"log"
 	"net/http"
 	"ticketing-api/auth"
 	"ticketing-api/types"
 )
 
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
+
+	log.Println("inside the handler", r)
 	req := CreateAccountRequest{}
 
 	err := decodeRequest(r, &req)

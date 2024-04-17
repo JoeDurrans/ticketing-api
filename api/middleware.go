@@ -12,7 +12,7 @@ func IsAdmin(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		err := auth.IsRole(r, types.RoleAdmin)
 		if err != nil {
-			encodeResponse(w, http.StatusUnauthorized, &APIResponse{Status: http.StatusUnauthorized, Message: err.Error()})
+			encodeResponse(w, http.StatusForbidden, &APIResponse{Status: http.StatusForbidden, Message: err.Error()})
 			return
 		}
 
@@ -22,9 +22,9 @@ func IsAdmin(next http.Handler) http.HandlerFunc {
 
 func IsEditor(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		err := auth.IsRole(r, types.RoleEditor)
+		err := auth.IsRole(r, types.RoleEditor, types.RoleAdmin)
 		if err != nil {
-			encodeResponse(w, http.StatusUnauthorized, &APIResponse{Status: http.StatusUnauthorized, Message: err.Error()})
+			encodeResponse(w, http.StatusForbidden, &APIResponse{Status: http.StatusForbidden, Message: err.Error()})
 			return
 		}
 
