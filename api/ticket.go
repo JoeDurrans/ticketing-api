@@ -142,6 +142,13 @@ func (s *APIServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) e
 		ticket.Description = req.Description
 	}
 
+	if req.AuthorID > 0 {
+		err = auth.IsRole(r, types.RoleEditor, types.RoleAdmin)
+		if err != nil {
+			return err
+		}
+	}
+
 	if req.Status != "" {
 		err = auth.IsAccountID(r, req.AuthorID, types.RoleAdmin, types.RoleEditor)
 		if err != nil {

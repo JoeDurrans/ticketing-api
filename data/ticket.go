@@ -68,7 +68,7 @@ func (t *TicketAdapter) GetByID(id int) (*types.Ticket, error) {
 }
 
 func (t *TicketAdapter) Update(ticket *types.Ticket) (*types.Ticket, error) {
-	_, err := t.db.Exec("UPDATE ticket SET title = $1, description = $2, status = $3 WHERE id = $4", ticket.Title, ticket.Description, ticket.Status, ticket.ID)
+	_, err := t.db.Exec("UPDATE ticket SET title = $1, description = $2, author_id = $3, status = $4 WHERE id = $5", ticket.Title, ticket.Description, ticket.AuthorID, ticket.Status, ticket.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error updating ticket")
 	}
