@@ -1,15 +1,12 @@
 package api
 
 import (
-	"log"
 	"net/http"
 	"ticketing-api/auth"
 	"ticketing-api/types"
 )
 
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
-
-	log.Println("inside the handler", r)
 	req := CreateAccountRequest{}
 
 	err := decodeRequest(r, &req)
@@ -17,7 +14,12 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	account, err := types.CreateAccount(req.Username, req.Password, req.Role)
+	passwordHash, err := auth.CreateHash(req.Password)
+	if err != nil {
+		return err
+	}
+
+	account, err := types.CreateAccount(req.Username, passwordHash, req.Role)
 	if err != nil {
 		return err
 	}
@@ -86,7 +88,12 @@ func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if req.Password != "" {
-		account.Password = req.Password
+		passwordHash, err := auth.CreateHash(req.Password)
+		if err != nil {
+			return err
+		}
+
+		account.Password = passwordHash
 	}
 
 	if req.Role != "" {
@@ -132,7 +139,7 @@ func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	err = account.CheckPasswordHash(req.Password)
+	err = auth.CompareHashAndPassword(account.Password, req.Password)
 	if err != nil {
 		return err
 	}

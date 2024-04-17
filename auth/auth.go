@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func IsAccountID(r *http.Request, id int, roles ...types.Role) error {
@@ -108,4 +109,24 @@ func ValidateJWT(t string) (*jwt.Token, error) {
 
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
+}
+
+func CompareHashAndPassword(hash, password string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if err != nil {
+		return &types.Unauthorized{
+			Message: "invalid password",
+		}
+	}
+
+	return nil
+}
+
+func CreateHash(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", fmt.Errorf("error hashing")
+	}
+
+	return string(bytes), nil
 }
