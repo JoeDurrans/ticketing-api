@@ -147,6 +147,8 @@ func (s *APIServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) e
 		if err != nil {
 			return err
 		}
+
+		ticket.AuthorID = req.AuthorID
 	}
 
 	if req.Status != "" {
