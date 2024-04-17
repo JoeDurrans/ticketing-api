@@ -10,7 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func AccountIDAuth(r *http.Request, id int, roles ...types.Role) error {
+func IsAccountID(r *http.Request, id int, roles ...types.Role) error {
 	claims, err := getClaims(r)
 	if err != nil {
 		return err
@@ -31,27 +31,16 @@ func AccountIDAuth(r *http.Request, id int, roles ...types.Role) error {
 	return &types.Forbidden{}
 }
 
-func IsAdmin(r *http.Request) error {
+func IsRole(r *http.Request, roles ...types.Role) error {
 	claims, err := getClaims(r)
 	if err != nil {
 		return err
 	}
 
-	if types.Role(claims["role"].(string)) == types.RoleAdmin {
-		return nil
-	}
-
-	return &types.Forbidden{}
-}
-
-func IsEditor(r *http.Request) error {
-	claims, err := getClaims(r)
-	if err != nil {
-		return err
-	}
-
-	if types.Role(claims["role"].(string)) == types.RoleEditor {
-		return nil
+	for _, role := range roles {
+		if role == types.Role(claims["role"].(string)) {
+			return nil
+		}
 	}
 
 	return &types.Forbidden{}
@@ -59,14 +48,10 @@ func IsEditor(r *http.Request) error {
 
 func IsAuthenticated(r *http.Request) error {
 	_, err := getClaims(r)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
-func GetID(r *http.Request) (int, error) {
+func GetAccountID(r *http.Request) (int, error) {
 	claims, err := getClaims(r)
 	if err != nil {
 		return 0, err

@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	"log"
 	"ticketing-api/types"
 
 	"github.com/gocql/gocql"
@@ -15,6 +16,28 @@ func CreateMessageAdapter(db *gocql.Session) *MessageAdapter {
 	return &MessageAdapter{
 		db: db,
 	}
+}
+
+func (m *MessageAdapter) Get(id int) ([]*types.Message, error) {
+	scanner := m.db.Query("SELECT id, ticket_id, author_id, content, created_at, updated_at FROM message WHERE ticket_id = ? ORDER BY created_at DESC", id).Iter().Scanner()
+
+	messages := []*types.Message{}
+
+	for scanner.Next() {
+		log.Println("scanning message")
+		msg, err := scanIntoMessage(scanner)
+		if err != nil {
+			return nil, err
+		}
+
+		messages = append(messages, msg)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("error reading messages")
+	}
+
+	return messages, nil
 }
 
 func (m *MessageAdapter) Create(message *types.Message) (*types.Message, error) {
@@ -36,7 +59,7 @@ func (m *MessageAdapter) Delete(id string) error {
 }
 
 func (m *MessageAdapter) GetByID(id string) (*types.Message, error) {
-	scanner := m.db.Query("SELECT * FROM message WHERE id = ?", id).Iter().Scanner()
+	scanner := m.db.Query("SELECT id, ticket_id, author_id, content, created_at, updated_at FROM message WHERE id = ?", id).Iter().Scanner()
 
 	for scanner.Next() {
 		return scanIntoMessage(scanner)
@@ -48,7 +71,7 @@ func (m *MessageAdapter) GetByID(id string) (*types.Message, error) {
 func (m *MessageAdapter) Update(message *types.Message) (*types.Message, error) {
 	err := m.db.Query("UPDATE message SET ticket_id = ?, author_id = ?, content = ?, created_at = ?, updated_at = ? WHERE id = ?", message.TicketID, message.AuthorID, message.Content, message.CreatedAt, message.UpdatedAt, message.ID).Exec()
 	if err != nil {
-		return nil, fmt.Errorf("error updating message: %w", err)
+		return nil, fmt.Errorf("error updating message")
 	}
 
 	return message, nil
@@ -58,9 +81,12 @@ func scanIntoMessage(scanner gocql.Scanner) (*types.Message, error) {
 
 	msg := &types.Message{}
 
-	err := scanner.Scan(&msg.ID, &msg.AuthorID, &msg.Content, &msg.CreatedAt, &msg.TicketID, &msg.UpdatedAt)
+	//scanner print line
+	log.Println(scanner)
+
+	err := scanner.Scan(&msg.ID, &msg.TicketID, &msg.AuthorID, &msg.Content, &msg.CreatedAt, &msg.UpdatedAt)
 	if err != nil {
-		return nil, fmt.Errorf("error scanning message: %w", err)
+		return nil, fmt.Errorf("error reading message")
 	}
 
 	return msg, nil

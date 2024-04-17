@@ -25,7 +25,7 @@ func (c *Client) handleCreateMessage(data json.RawMessage) error {
 
 	currentTime := time.Now()
 
-	accountID, err := auth.GetID(c.conn.Request())
+	accountID, err := auth.GetAccountID(c.conn.Request())
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func (c *Client) handleDeleteMessage(data json.RawMessage) error {
 		return err
 	}
 
-	err = auth.AccountIDAuth(c.conn.Request(), message.AuthorID, types.RoleAdmin)
+	err = auth.IsAccountID(c.conn.Request(), message.AuthorID, types.RoleAdmin)
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func (c *Client) handleUpdateMessage(data []byte) error {
 		return err
 	}
 
-	err = auth.AccountIDAuth(c.conn.Request(), message.AuthorID, types.RoleAdmin)
+	err = auth.IsAccountID(c.conn.Request(), message.AuthorID, types.RoleAdmin)
 	if err != nil {
 		return err
 	}

@@ -1,1 +1,1 @@
-CREATE TABLE message AS SELECT * FROM messages;
+DROP TABLE ticketing_api.schema_migrations;

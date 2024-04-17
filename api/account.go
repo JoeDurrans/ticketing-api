@@ -42,7 +42,7 @@ func (s *APIServer) handleGetAccountByID(w http.ResponseWriter, r *http.Request)
 		return err
 	}
 
-	err = auth.AccountIDAuth(r, id, types.RoleAdmin, types.RoleEditor)
+	err = auth.IsAccountID(r, id, types.RoleAdmin, types.RoleEditor)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	err = auth.AccountIDAuth(r, id, types.RoleAdmin)
+	err = auth.IsAccountID(r, id, types.RoleAdmin)
 	if err != nil {
 		return err
 	}
@@ -104,7 +104,7 @@ func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	err = auth.AccountIDAuth(r, id, types.RoleAdmin)
+	err = auth.IsAccountID(r, id, types.RoleAdmin)
 	if err != nil {
 		return err
 	}

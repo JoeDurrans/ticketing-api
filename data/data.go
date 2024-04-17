@@ -26,6 +26,7 @@ type TicketSocket interface {
 
 type MessageSocket interface {
 	Create(*types.Message) (*types.Message, error)
+	Get(int) ([]*types.Message, error)
 	GetByID(string) (*types.Message, error)
 	Update(*types.Message) (*types.Message, error)
 	Delete(string) error

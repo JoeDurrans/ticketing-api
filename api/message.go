@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 	"ticketing-api/auth"
 	"ticketing-api/chat"
@@ -22,7 +23,7 @@ func (s *APIServer) handleChatGroup(w http.ResponseWriter, r *http.Request) erro
 
 	r.Header.Set("Authorization", r.Header.Get("Sec-WebSocket-Protocol"))
 
-	err = auth.AccountIDAuth(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor)
+	err = auth.IsAccountID(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor)
 	if err != nil {
 		return err
 	}
@@ -42,6 +43,36 @@ func (s *APIServer) handleChatGroup(w http.ResponseWriter, r *http.Request) erro
 	}.ServeHTTP(w, r)
 
 	return nil
+}
+
+func (s *APIServer) handleGetMessages(w http.ResponseWriter, r *http.Request) error {
+	id, err := getID(r)
+	if err != nil {
+		return err
+	}
+
+	log.Println("getting messages for ticket", id)
+
+	ticket, err := s.db.Ticket.GetByID(id)
+	if err != nil {
+		return err
+	}
+
+	log.Println("ticket found", ticket)
+
+	err = auth.IsAccountID(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor)
+	if err != nil {
+		return err
+	}
+
+	messages, err := s.db.Message.Get(ticket.ID)
+	if err != nil {
+		return err
+	}
+
+	log.Println("messages found", messages)
+
+	return encodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusOK, Message: "messages found", Data: messages})
 }
 
 type CreateMessageRequest struct {

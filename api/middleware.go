@@ -4,12 +4,13 @@ import (
 	"log"
 	"net/http"
 	"ticketing-api/auth"
+	"ticketing-api/types"
 	"time"
 )
 
 func IsAdmin(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		err := auth.IsAdmin(r)
+		err := auth.IsRole(r, types.RoleAdmin)
 		if err != nil {
 			encodeResponse(w, http.StatusUnauthorized, &APIResponse{Status: http.StatusUnauthorized, Message: err.Error()})
 			return
@@ -21,7 +22,7 @@ func IsAdmin(next http.Handler) http.HandlerFunc {
 
 func IsEditor(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		err := auth.IsEditor(r)
+		err := auth.IsRole(r, types.RoleEditor)
 		if err != nil {
 			encodeResponse(w, http.StatusUnauthorized, &APIResponse{Status: http.StatusUnauthorized, Message: err.Error()})
 			return

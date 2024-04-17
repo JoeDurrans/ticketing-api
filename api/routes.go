@@ -39,10 +39,12 @@ func (s *APIServer) Start() error {
 
 	router.HandleFunc("POST /ticket", IsAuthenticated(makeHTTPHandleFunc(s.handleCreateTicket)))
 	router.HandleFunc("GET /ticket", makeHTTPHandleFunc(s.handleGetTickets))
-	router.HandleFunc("GET /ticket/{id}/chat", makeHTTPHandleFunc(s.handleChatGroup))
 	router.HandleFunc("GET /ticket/{id}", IsAuthenticated(makeHTTPHandleFunc(s.handleGetTicketByID)))
 	router.HandleFunc("PUT /ticket/{id}", IsAuthenticated(makeHTTPHandleFunc(s.handleUpdateTicket)))
 	router.HandleFunc("DELETE /ticket/{id}", IsAuthenticated(makeHTTPHandleFunc(s.handleDeleteTicket)))
+
+	router.HandleFunc("GET /ticket/{id}/chat", makeHTTPHandleFunc(s.handleChatGroup))
+	router.HandleFunc("GET /ticket/{id}/chat/message", makeHTTPHandleFunc(s.handleGetMessages))
 
 	server := &http.Server{
 		Addr:    s.addr,

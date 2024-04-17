@@ -18,21 +18,21 @@ func (s *APIServer) handleCreateTicket(w http.ResponseWriter, r *http.Request) e
 	}
 
 	if req.AuthorID > 0 {
-		err = auth.AccountIDAuth(r, req.AuthorID, types.RoleAdmin)
+		err = auth.IsAccountID(r, req.AuthorID, types.RoleAdmin)
 		if err != nil {
 			return err
 		}
 	}
 
 	if req.Status != "" {
-		err = auth.AccountIDAuth(r, req.AuthorID, types.RoleAdmin, types.RoleEditor)
+		err = auth.IsAccountID(r, req.AuthorID, types.RoleAdmin, types.RoleEditor)
 		if err != nil {
 			return err
 		}
 	}
 
 	if len(req.AssigneeIDs) > 0 {
-		err = auth.AccountIDAuth(r, req.AuthorID, types.RoleAdmin, types.RoleEditor)
+		err = auth.IsAccountID(r, req.AuthorID, types.RoleAdmin, types.RoleEditor)
 		if err != nil {
 			return err
 		}
@@ -55,7 +55,7 @@ func (s *APIServer) handleGetTickets(w http.ResponseWriter, r *http.Request) err
 		return err
 	}
 
-	err = auth.AccountIDAuth(r, authorID, types.RoleAdmin, types.RoleEditor)
+	err = auth.IsAccountID(r, authorID, types.RoleAdmin, types.RoleEditor)
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func (s *APIServer) handleGetTicketByID(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	err = auth.AccountIDAuth(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor)
+	err = auth.IsAccountID(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor)
 	if err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func (s *APIServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) e
 		return err
 	}
 
-	err = auth.AccountIDAuth(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor)
+	err = auth.IsAccountID(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor)
 	if err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func (s *APIServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) e
 	}
 
 	if req.Status != "" {
-		err = auth.AccountIDAuth(r, req.AuthorID, types.RoleAdmin, types.RoleEditor)
+		err = auth.IsAccountID(r, req.AuthorID, types.RoleAdmin, types.RoleEditor)
 		if err != nil {
 			return err
 		}
@@ -152,7 +152,7 @@ func (s *APIServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) e
 	}
 
 	if len(req.AssigneeIDs) > 0 {
-		err = auth.AccountIDAuth(r, req.AuthorID, types.RoleAdmin, types.RoleEditor)
+		err = auth.IsAccountID(r, req.AuthorID, types.RoleAdmin, types.RoleEditor)
 		if err != nil {
 			return err
 		}
@@ -179,7 +179,7 @@ func (s *APIServer) handleDeleteTicket(w http.ResponseWriter, r *http.Request) e
 		return err
 	}
 
-	err = auth.AccountIDAuth(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor)
+	err = auth.IsAccountID(r, ticket.AuthorID, types.RoleAdmin, types.RoleEditor)
 	if err != nil {
 		return err
 	}
