@@ -71,6 +71,9 @@ func GetRole(r *http.Request) (types.Role, error) {
 
 func getClaims(r *http.Request) (jwt.MapClaims, error) {
 	tokenStr := r.Header.Get("Authorization")
+	if len(tokenStr) > 7 && tokenStr[:7] == "Bearer " {
+		tokenStr = tokenStr[7:]
+	}
 
 	token, err := ValidateJWT(tokenStr)
 	if err != nil || !token.Valid {
