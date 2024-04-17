@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -134,6 +135,8 @@ func (s *APIServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) e
 		return err
 	}
 
+	log.Println("req", req)
+
 	if req.Title != "" {
 		ticket.Title = req.Title
 	}
@@ -210,7 +213,7 @@ func getAuthorID(r *http.Request) (int, error) {
 
 	authorID, err := strconv.Atoi(authorIDStr)
 	if err != nil {
-		return authorID, fmt.Errorf("error converting author_id: %w", err)
+		return authorID, fmt.Errorf("error getting author_id")
 	}
 
 	return authorID, nil
@@ -228,7 +231,7 @@ func getAssigneeIDs(r *http.Request) ([]int, error) {
 	for _, idStr := range strings.Split(assigneeIDsStr, "+") {
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			return assigneeIDs, fmt.Errorf("error converting assignee_ids: %w", err)
+			return assigneeIDs, fmt.Errorf("error getting assignee_ids")
 		}
 
 		assigneeIDs = append(assigneeIDs, id)
@@ -240,7 +243,7 @@ func getAssigneeIDs(r *http.Request) ([]int, error) {
 type CreateTicketRequest struct {
 	Title       string       `json:"title"`
 	Description string       `json:"description"`
-	AuthorID    int          `json:"author"`
+	AuthorID    int          `json:"author_id"`
 	Status      types.Status `json:"status"`
 	AssigneeIDs []int        `json:"assignee_ids"`
 }
