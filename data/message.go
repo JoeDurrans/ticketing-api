@@ -2,7 +2,6 @@ package data
 
 import (
 	"fmt"
-	"log"
 	"ticketing-api/types"
 
 	"github.com/gocql/gocql"
@@ -24,7 +23,6 @@ func (m *MessageAdapter) Get(id int) ([]*types.Message, error) {
 	messages := []*types.Message{}
 
 	for scanner.Next() {
-		log.Println("scanning message")
 		msg, err := scanIntoMessage(scanner)
 		if err != nil {
 			return nil, err
@@ -78,11 +76,7 @@ func (m *MessageAdapter) Update(message *types.Message) (*types.Message, error) 
 }
 
 func scanIntoMessage(scanner gocql.Scanner) (*types.Message, error) {
-
 	msg := &types.Message{}
-
-	//scanner print line
-	log.Println(scanner)
 
 	err := scanner.Scan(&msg.ID, &msg.TicketID, &msg.AuthorID, &msg.Content, &msg.CreatedAt, &msg.UpdatedAt)
 	if err != nil {
