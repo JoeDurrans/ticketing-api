@@ -47,11 +47,11 @@ func (t *TicketAdapter) GetByAuthorID(authorID int) ([]*types.Ticket, error) {
 }
 
 func (t *TicketAdapter) GetByAssigneeIDs(assigneeIDs []int) ([]*types.Ticket, error) {
-	return t.fetchTickets("SELECT ticket.id, ticket.title, ticket.description, ticket.status, ticket.author_id, ticket.created_at, ticket.updated_at, assignee.account_id FROM ticket LEFT JOIN assignee ON ticket.id = assignee.ticket_id WHERE assignee.account_id = ANY($1)", pq.Array(assigneeIDs))
+	return t.fetchTickets("SELECT ticket.id, ticket.title, ticket.description, ticket.status, ticket.author_id, ticket.created_at, ticket.updated_at, assignee.account_id FROM ticket LEFT JOIN assignee ON ticket.id = assignee.ticket_id WHERE ticket.id IN (SELECT ticket_id FROM assignee WHERE account_id = ANY($1))", pq.Array(assigneeIDs))
 }
 
 func (t *TicketAdapter) GetByAuthorIDAssigneeIDs(authorID int, assigneeIDs []int) ([]*types.Ticket, error) {
-	return t.fetchTickets("SELECT ticket.id, ticket.title, ticket.description, ticket.status, ticket.author_id, ticket.created_at, ticket.updated_at, assignee.account_id FROM ticket LEFT JOIN assignee ON ticket.id = assignee.ticket_id WHERE author_id = $1 AND assignee.account_id = ANY($2)", authorID, pq.Array(assigneeIDs))
+	return t.fetchTickets("SELECT ticket.id, ticket.title, ticket.description, ticket.status, ticket.author_id, ticket.created_at, ticket.updated_at, assignee.account_id FROM ticket LEFT JOIN assignee ON ticket.id = assignee.ticket_id WHERE author_id = $1 AND ticket.id IN (SELECT ticket_id FROM assignee WHERE account_id = ANY($2))", authorID, pq.Array(assigneeIDs))
 }
 
 func (t *TicketAdapter) GetByID(id int) (*types.Ticket, error) {
