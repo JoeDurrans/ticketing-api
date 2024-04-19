@@ -6,7 +6,6 @@ import (
 	"ticketing-api/types"
 
 	"github.com/lib/pq"
-	_ "github.com/lib/pq"
 )
 
 type TicketAdapter struct {
