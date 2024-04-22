@@ -52,7 +52,7 @@ func (c *Client) handleDeleteMessage(data json.RawMessage) error {
 		return err
 	}
 
-	message, err := c.db.Message.GetByID(req.ID)
+	message, err := c.db.Message.GetByID(req.ID, req.CreatedAt, req.TicketID)
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func (c *Client) handleDeleteMessage(data json.RawMessage) error {
 		return err
 	}
 
-	err = c.db.Message.Delete(message.ID)
+	err = c.db.Message.Delete(message.ID, message.CreatedAt, message.TicketID)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (c *Client) handleUpdateMessage(data []byte) error {
 		return err
 	}
 
-	message, err := c.db.Message.GetByID(req.ID)
+	message, err := c.db.Message.GetByID(req.ID, req.CreatedAt, req.TicketID)
 	if err != nil {
 		return err
 	}
@@ -188,12 +188,16 @@ type CreateMessageRequest struct {
 }
 
 type UpdateMessageRequest struct {
-	ID      string `json:"id"`
-	Content string `json:"content"`
+	ID        string    `json:"id"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+	TicketID  int       `json:"ticket_id"`
 }
 
 type DeleteMessageRequest struct {
-	ID string `json:"id"`
+	ID        string    `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	TicketID  int       `json:"ticket_id"`
 }
 
 type DeleteMessageResponse struct {

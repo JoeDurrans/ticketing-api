@@ -82,7 +82,7 @@ func (a *AccountAdapter) GetByUsername(username string) (*types.Account, error) 
 func (a *AccountAdapter) Update(account *types.Account) (*types.Account, error) {
 	_, err := a.db.Exec(`UPDATE account SET username = $1, password = $2, role = $3 WHERE id = $4`, account.Username, account.Password, account.Role, account.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error updating account")
+		return nil, fmt.Errorf("error updating account: %w", err)
 	}
 
 	return account, nil

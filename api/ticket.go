@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -134,8 +133,6 @@ func (s *APIServer) handleUpdateTicket(w http.ResponseWriter, r *http.Request) e
 	if err != nil {
 		return err
 	}
-
-	log.Println("req", req)
 
 	if req.Title != "" {
 		ticket.Title = req.Title

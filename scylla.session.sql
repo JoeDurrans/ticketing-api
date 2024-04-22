@@ -1,1 +1,0 @@
-DROP TABLE ticketing_api.schema_migrations;

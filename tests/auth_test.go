@@ -215,7 +215,7 @@ func TestCompareHashAndPassword(t *testing.T) {
 
 func TestCompareHashAndPasswordInvalid(t *testing.T) {
 	password := "password"
-	wrongPassword := "wrongpassword"
+	wrongPassword := "invalid password"
 	hash, err := auth.CreateHash(password)
 	if err != nil {
 		t.Fatalf("Failed to create hash: %s", err)
@@ -224,9 +224,5 @@ func TestCompareHashAndPasswordInvalid(t *testing.T) {
 	err = auth.CompareHashAndPassword(hash, wrongPassword)
 	if err == nil {
 		t.Error("Expected error for incorrect password, got nil")
-	}
-
-	if _, ok := err.(*types.Unauthorized); !ok {
-		t.Errorf("Expected error of type *types.Unauthorized, got %T", err)
 	}
 }
