@@ -124,7 +124,7 @@ func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return encodeResponse(w, http.StatusNoContent, &APIResponse{Status: http.StatusNoContent, Message: "account deleted"})
+	return encodeResponse(w, http.StatusOK, &APIResponse{Status: http.StatusNoContent, Message: "account deleted"})
 }
 
 func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {
