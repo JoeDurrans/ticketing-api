@@ -136,7 +136,7 @@ func (c *Client) Read() {
 		err := websocket.JSON.Receive(c.conn, &req)
 		if err != nil {
 			c.send <- &WSMessage{Status: StatusError, Message: "error reading message"}
-			return
+			continue
 		}
 
 		switch req.Action {
