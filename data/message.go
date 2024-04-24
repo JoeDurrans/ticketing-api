@@ -19,7 +19,7 @@ func CreateMessageAdapter(db *gocql.Session) *MessageAdapter {
 }
 
 func (m *MessageAdapter) Get(id int) ([]*types.Message, error) {
-	scanner := m.db.Query("SELECT id, ticketc;_id, author_id, content, created_at, updated_at FROM message WHERE ticket_id = ? ORDER BY created_at DESC", id).Iter().Scanner()
+	scanner := m.db.Query("SELECT id, ticket_id, author_id, content, created_at, updated_at FROM message WHERE ticket_id = ? ORDER BY created_at DESC", id).Iter().Scanner()
 
 	messages := []*types.Message{}
 
@@ -30,10 +30,6 @@ func (m *MessageAdapter) Get(id int) ([]*types.Message, error) {
 		}
 
 		messages = append(messages, msg)
-	}
-
-	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("error reading messages")
 	}
 
 	return messages, nil
