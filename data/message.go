@@ -38,7 +38,7 @@ func (m *MessageAdapter) Get(id int) ([]*types.Message, error) {
 func (m *MessageAdapter) Create(message *types.Message) (*types.Message, error) {
 	err := m.db.Query("INSERT INTO message (id, ticket_id, author_id, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)", message.ID, message.TicketID, message.AuthorID, message.Content, message.CreatedAt, message.UpdatedAt).Exec()
 	if err != nil {
-		return nil, fmt.Errorf("error creating message: %w", err)
+		return nil, fmt.Errorf("error creating message")
 	}
 
 	return message, nil
@@ -47,7 +47,7 @@ func (m *MessageAdapter) Create(message *types.Message) (*types.Message, error) 
 func (m *MessageAdapter) Delete(id string, created_at time.Time, ticket_id int) error {
 	err := m.db.Query("DELETE FROM message WHERE id = ? AND created_at = ? AND ticket_id = ?", id, created_at, ticket_id).Exec()
 	if err != nil {
-		return fmt.Errorf("error deleting message: %w", err)
+		return fmt.Errorf("error deleting message")
 	}
 
 	return nil
