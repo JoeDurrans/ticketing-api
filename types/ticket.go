@@ -30,5 +30,7 @@ func CreateTicket(title string, description string, authorID int, status Status,
 		AuthorID:    authorID,
 		Status:      status,
 		AssigneeIDs: assigneeIDs,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	}
 }

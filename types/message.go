@@ -13,13 +13,13 @@ type Message struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func CreateMessage(id string, ticketID int, authorID int, content string, createdAt time.Time, updatedAt time.Time) (*Message, error) {
+func CreateMessage(id string, ticketID int, authorID int, content string) (*Message, error) {
 	return &Message{
 		ID:        id,
 		TicketID:  ticketID,
 		AuthorID:  authorID,
 		Content:   content,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}, nil
 }

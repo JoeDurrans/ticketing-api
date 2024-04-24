@@ -23,14 +23,12 @@ func (c *Client) handleCreateMessage(data json.RawMessage) error {
 		return err
 	}
 
-	currentTime := time.Now()
-
 	accountID, err := auth.GetAccountID(c.conn.Request())
 	if err != nil {
 		return err
 	}
 
-	message, err := types.CreateMessage(id.String(), c.group.ticketID, accountID, req.Content, currentTime, currentTime)
+	message, err := types.CreateMessage(id.String(), c.group.ticketID, accountID, req.Content)
 	if err != nil {
 		return err
 	}
