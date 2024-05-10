@@ -38,7 +38,7 @@ func (s *APIServer) Start() error {
 	router.HandleFunc("DELETE /account/{id}", IsAuthenticated(makeHTTPHandleFunc(s.handleDeleteAccount)))
 
 	router.HandleFunc("POST /ticket", IsAuthenticated(makeHTTPHandleFunc(s.handleCreateTicket)))
-	router.HandleFunc("GET /ticket", makeHTTPHandleFunc(s.handleGetTickets))
+	router.HandleFunc("GET /ticket", IsEditor(makeHTTPHandleFunc(s.handleGetTickets)))
 	router.HandleFunc("GET /ticket/{id}", IsAuthenticated(makeHTTPHandleFunc(s.handleGetTicketByID)))
 	router.HandleFunc("PUT /ticket/{id}", IsAuthenticated(makeHTTPHandleFunc(s.handleUpdateTicket)))
 	router.HandleFunc("DELETE /ticket/{id}", IsAuthenticated(makeHTTPHandleFunc(s.handleDeleteTicket)))

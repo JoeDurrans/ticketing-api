@@ -22,7 +22,7 @@
     ```
 
     ```sql
-    CREATE KEYSPACE your_keyspace_name WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
+    CREATE KEYSPACE your_keyspace_name WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};
     ```
 
 4. **Run Database Migrations** 
