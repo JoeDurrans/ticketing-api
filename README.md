@@ -39,39 +39,3 @@
      ```sh
     docker-compose up go
     ```
-
-
-## Notes
-
-### Account Setup
-You will need to add an user to utilise any of the routes. 
-To do this, please modify the routes file from:
-
-```go
-	router.HandleFunc("POST /account", IsAdmin(makeHTTPHandleFunc(s.handleCreateAccount)))
-```
-
-To: 
-
-```go
-	router.HandleFunc("POST /account", makeHTTPHandleFunc(s.handleCreateAccount))
-```
-
-Then, re-run the application and create an account using the endpoint.
-
-Finally, return the application to its original state and re-run it once more.
-
-# Live
-
-https://ticketing-api-production.up.railway.app
-
-(Login details for the live environment are in the .env file which should be in the zip file)
-
-**THE LIVE ENVIRONMENT MAY GIVE YOU AN ERROR INITIALLY. THIS IS BECAUSE THE DATABASE IS SLEEPING DUE TO INACTIVITY TO REDUCE COSTS. PLEASE SEND A REQUEST TO AN ENDPOINT THAT UTILISES THE DATABASE TO WAKE IT UP, WAIT, AND TRY AGAIN** 
-
-**PLEASE DO NOT PERFORMANCE TEST THE LIVE APPLICATION FOR COST REASONS. THIS LIVE VERSION MAY BE DISABLED AT ANY TIME TO PREVENT UNNECESSARY COSTS SO YOU MAY HAVE TO SETUP THE LOCAL ENVIRONMENT ABOVE** 
-
-# Testing
-
-I've included a exported postman collection for all the REST endpoints so they are easy to test. Unfortunately, WebSocket endpoints cannot be exported so please use the demonstration video in the powerpoint to guide testing.
-
